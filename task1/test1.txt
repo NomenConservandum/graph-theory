@@ -1,0 +1,4 @@
+UNDIRECTED
+A B
+B C
+C D
