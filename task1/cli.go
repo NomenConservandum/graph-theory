@@ -44,7 +44,7 @@ func CLI() *ClientSideGraph {
 }
 
 func (c *ClientSideGraph) printMenu() {
-	fmt.Println("\n=== Graph ClientSideGraph ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10.Exit\nChoose an option: ")
+	fmt.Println("\n=== Graph ClientSideGraph ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10. Save to file\n11.Exit\nChoose an option: ")
 }
 
 func (c *ClientSideGraph) addVertex() {
@@ -288,6 +288,27 @@ func (c *ClientSideGraph) loadFromFile() {
 	}
 }
 
+func (c *ClientSideGraph) saveToFile() {
+	var vt string
+	fmt.Print("Enter file path: ")
+	fmt.Scanln(&vt)
+	path := strings.TrimSpace(vt)
+	path = strings.TrimSpace(path)
+
+	if path == "" {
+		fmt.Println("No file path provided")
+		return
+	}
+
+	var saveErr = WriteToFile(c.graph, path)
+
+	if saveErr != nil {
+		fmt.Printf("Error saving file: %v\n", saveErr)
+	} else {
+		fmt.Println("File saved successfully!")
+	}
+}
+
 func (c *ClientSideGraph) Run() {
 	fmt.Println("Welcome to Graph ClientSideGraph!")
 
@@ -324,6 +345,8 @@ func (c *ClientSideGraph) Run() {
 		case 9:
 			c.loadFromFile()
 		case 10:
+			c.saveToFile()
+		case 11:
 			fmt.Println("Goodbye!")
 			return
 		default:

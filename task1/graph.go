@@ -179,7 +179,7 @@ func addNonOrientedNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) error {
 	}
 }
 
-// TODO: change it
+// TODO: change everything below it
 
 func GraphFromFileConstructor(path string) *GraphInfo {
 	file, err := os.Open(path)
@@ -409,5 +409,108 @@ func findNodeByValue(graph *GraphInfo, value interface{}) *Node {
 			return node
 		}
 	}
+	return nil
+}
+
+// WriteToFile saves the graph to a file
+func WriteToFile(graph *GraphInfo, path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("error creating file: %v", err)
+	}
+	defer file.Close()
+
+	writer := bufio.NewWriter(file)
+	defer writer.Flush()
+
+	// Write graph type
+	graphType := "UNDIRECTED"
+	if graph.isOriented {
+		graphType = "DIRECTED"
+	}
+
+	weightType := "UNWEIGHTED"
+	if graph.isWeighted {
+		weightType = "WEIGHTED"
+	}
+
+	_, err = writer.WriteString(fmt.Sprintf("TYPE: %s %s\n", graphType, weightType))
+	if err != nil {
+		return err
+	}
+
+	// Write vertices
+	_, err = writer.WriteString("VERTICES: ")
+	if err != nil {
+		return err
+	}
+
+	vertexStrings := make([]string, 0, len(graph.nodes))
+	for _, node := range graph.nodes {
+		vertexStrings = append(vertexStrings, fmt.Sprintf("%v", node.Value))
+	}
+
+	_, err = writer.WriteString(strings.Join(vertexStrings, ",") + "\n")
+	if err != nil {
+		return err
+	}
+
+	// Write edges section header
+	_, err = writer.WriteString("EDGES:\n")
+	if err != nil {
+		return err
+	}
+
+	// Write edges
+	writtenEdges := make(map[string]bool) // To avoid duplicates in undirected graphs
+
+	for fromNode, edges := range graph.connectionsList {
+		for _, edge := range edges {
+			fromValue := fmt.Sprintf("%v", fromNode.Value)
+			toValue := fmt.Sprintf("%v", edge.List[1].Value)
+
+			// Create edge key for duplicate checking
+			var edgeKey string
+			if graph.isOriented {
+				edgeKey = fromValue + "->" + toValue
+			} else {
+				// For undirected, sort the nodes to avoid duplicates
+				if fromValue < toValue {
+					edgeKey = fromValue + "-" + toValue
+				} else {
+					edgeKey = toValue + "-" + fromValue
+				}
+			}
+
+			// Skip if we've already written this edge (for undirected graphs)
+			if writtenEdges[edgeKey] {
+				continue
+			}
+			writtenEdges[edgeKey] = true
+
+			var edgeLine string
+			if graph.isOriented {
+				if graph.isWeighted {
+					edgeLine = fmt.Sprintf("%s->%s: %.2f\n", fromValue, toValue, edge.Weight)
+				} else {
+					edgeLine = fmt.Sprintf("%s->%s\n", fromValue, toValue)
+				}
+			} else {
+				if graph.isWeighted {
+					edgeLine = fmt.Sprintf("%s-%s: %.2f\n", fromValue, toValue, edge.Weight)
+				} else {
+					edgeLine = fmt.Sprintf("%s-%s\n", fromValue, toValue)
+				}
+			}
+
+			_, err = writer.WriteString(edgeLine)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	fmt.Printf("Graph successfully saved to %s: %d vertices, %d edges\n",
+		path, len(graph.nodes), len(writtenEdges))
 	return nil
 }
