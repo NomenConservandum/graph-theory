@@ -34,32 +34,32 @@ import (
 	"strings"
 )
 
-type CLI struct {
+type ClientSideGraph struct {
 	graph *GraphInfo
 }
 
-func NewCLI() *CLI {
-	return &CLI{
+func CLI() *ClientSideGraph {
+	return &ClientSideGraph{
 		graph: GraphConstructor(false, false), // default: undirected, unweighted
 	}
 }
 
-func (c *CLI) printMenu() {
-	fmt.Println("\n=== Graph CLI ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10.Exit\nChoose an option: ")
+func (c *ClientSideGraph) printMenu() {
+	fmt.Println("\n=== Graph ClientSideGraph ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10.Exit\nChoose an option: ")
 }
 
-func (c *CLI) addVertex() {
-	reader := bufio.NewReader(os.Stdin)
+func (c *ClientSideGraph) addVertex() {
+	var vt string
 	fmt.Print("Enter vertex value: ")
-	value, _ := reader.ReadString('\n')
-	value = strings.TrimSpace(value)
+	fmt.Scanln(&vt)
+	value := strings.TrimSpace(vt)
 
 	node := NodeConstructor(value)
 	addVertex(c.graph, node)
-	fmt.Printf("Vertex '%s' added successfully\n", value)
+	fmt.Println("Vertex '", value, "' added successfully")
 }
 
-func (c *CLI) addEdge() {
+func (c *ClientSideGraph) addEdge() {
 	if len(c.graph.nodes) < 2 {
 		fmt.Println("Need at least 2 vertices to add an edge")
 		return
@@ -67,19 +67,21 @@ func (c *CLI) addEdge() {
 
 	c.listVertices()
 
-	reader := bufio.NewReader(os.Stdin)
-
+	var vt string
 	fmt.Print("Enter first vertex index: ")
-	idx1Str, _ := reader.ReadString('\n')
-	idx1, err := strconv.Atoi(strings.TrimSpace(idx1Str))
+	fmt.Scanln(&vt)
+
+	idx1Str := strings.TrimSpace(vt)
+	idx1, err := strconv.Atoi(idx1Str)
 	if err != nil || idx1 < 0 || idx1 >= len(c.graph.nodes) {
 		fmt.Println("Invalid vertex index")
 		return
 	}
 
 	fmt.Print("Enter second vertex index: ")
-	idx2Str, _ := reader.ReadString('\n')
-	idx2, err := strconv.Atoi(strings.TrimSpace(idx2Str))
+	fmt.Scanln(&vt)
+	idx2Str := strings.TrimSpace(vt)
+	idx2, err := strconv.Atoi(idx2Str)
 	if err != nil || idx2 < 0 || idx2 >= len(c.graph.nodes) {
 		fmt.Println("Invalid vertex index")
 		return
@@ -88,8 +90,9 @@ func (c *CLI) addEdge() {
 	var weight float64 = 0
 	if c.graph.isWeighted {
 		fmt.Print("Enter edge weight: ")
-		weightStr, _ := reader.ReadString('\n')
-		weight, err = strconv.ParseFloat(strings.TrimSpace(weightStr), 64)
+		fmt.Scanln(&vt)
+		weightStr := strings.TrimSpace(vt)
+		weight, err = strconv.ParseFloat(weightStr, 64)
 		if err != nil {
 			fmt.Println("Invalid weight, using 0")
 			weight = 0
@@ -120,7 +123,7 @@ func (c *CLI) addEdge() {
 	}
 }
 
-func (c *CLI) removeVertex() {
+func (c *ClientSideGraph) removeVertex() {
 	if len(c.graph.nodes) == 0 {
 		fmt.Println("No vertices to remove")
 		return
@@ -128,10 +131,11 @@ func (c *CLI) removeVertex() {
 
 	c.listVertices()
 
-	reader := bufio.NewReader(os.Stdin)
+	var vt string
 	fmt.Print("Enter vertex index to remove: ")
-	idxStr, _ := reader.ReadString('\n')
-	idx, err := strconv.Atoi(strings.TrimSpace(idxStr))
+	fmt.Scanln(&vt)
+	idxStr := strings.TrimSpace(vt)
+	idx, err := strconv.Atoi(idxStr)
 	if err != nil || idx < 0 || idx >= len(c.graph.nodes) {
 		fmt.Println("Invalid vertex index")
 		return
@@ -142,13 +146,32 @@ func (c *CLI) removeVertex() {
 	fmt.Printf("Vertex '%v' removed successfully\n", node.Value)
 }
 
-func (c *CLI) removeEdge() {
-	// This is a simplified version - in a real implementation you'd need to list edges first
-	fmt.Println("Edge removal not fully implemented in this CLI")
-	fmt.Println("You would need to implement edge listing first")
+var edgeLst []*Edge
+
+func (c *ClientSideGraph) removeEdge() {
+	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
+		fmt.Println("No edges to remove")
+		return
+	}
+
+	c.listEdges(true)
+
+	var vt string
+	fmt.Print("Enter edge index to remove: ")
+	fmt.Scanln(&vt)
+	idxStr := strings.TrimSpace(vt)
+	idx, err := strconv.Atoi(idxStr)
+	if err != nil || idx < 0 || idx >= len(c.graph.connectionsList) { // change a bit
+		fmt.Println("Invalid vertex index")
+		return
+	}
+
+	edge := edgeLst[idx]
+	removeEdge(c.graph, edge)
+	fmt.Println("Edge from '", edge.List[0].Value, "' to '", edge.List[1].Value, "' has been removed successfully")
 }
 
-func (c *CLI) listVertices() {
+func (c *ClientSideGraph) listVertices() {
 	fmt.Println("\nVertices:")
 	if len(c.graph.nodes) == 0 {
 		fmt.Println("No vertices")
@@ -160,7 +183,7 @@ func (c *CLI) listVertices() {
 	}
 }
 
-func (c *CLI) listEdges() {
+func (c *ClientSideGraph) listEdges(mode bool) {
 	fmt.Println("\nEdges:")
 	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
 		fmt.Println("No edges")
@@ -170,12 +193,16 @@ func (c *CLI) listEdges() {
 	edgeCount := 0
 	for node, edges := range c.graph.connectionsList {
 		for _, edge := range edges {
-			fmt.Printf("From '%v' to '%v'", node.Value, edge.List[1].Value)
+			if mode {
+				fmt.Print(edgeCount, ". ")
+			}
+			fmt.Print("From '", node.Value, "' to '", edge.List[1].Value, "'")
 			if c.graph.isWeighted {
 				fmt.Printf(" (weight: %.2f)", edge.Weight)
 			}
 			fmt.Println()
 			edgeCount++
+			edgeLst = append(edgeLst, edge)
 		}
 	}
 
@@ -184,7 +211,7 @@ func (c *CLI) listEdges() {
 	}
 }
 
-func (c *CLI) changeGraphType() {
+func (c *ClientSideGraph) changeGraphType() {
 	reader := bufio.NewReader(os.Stdin)
 
 	fmt.Print("Is the graph oriented? (y/n): ")
@@ -203,7 +230,7 @@ func (c *CLI) changeGraphType() {
 	fmt.Printf("Graph type changed: oriented=%v, weighted=%v\n", oriented, weighted)
 }
 
-func (c *CLI) printGraphInfo() {
+func (c *ClientSideGraph) printGraphInfo() {
 	fmt.Println("\nGraph Information:")
 	fmt.Printf("Type: %s, %s\n",
 		map[bool]string{true: "Oriented", false: "Non-oriented"}[c.graph.isOriented],
@@ -219,7 +246,7 @@ func (c *CLI) printGraphInfo() {
 	fmt.Printf("Number of edges: %d\n", edgeCount)
 }
 
-func (c *CLI) loadFromFile() {
+func (c *ClientSideGraph) loadFromFile() {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter file path: ")
 	path, _ := reader.ReadString('\n')
@@ -245,8 +272,8 @@ func (c *CLI) loadFromFile() {
 	}
 }
 
-func (c *CLI) Run() {
-	fmt.Println("Welcome to Graph CLI!")
+func (c *ClientSideGraph) Run() {
+	fmt.Println("Welcome to Graph ClientSideGraph!")
 
 	for {
 		c.printMenu()
@@ -272,7 +299,7 @@ func (c *CLI) Run() {
 		case 5:
 			c.listVertices()
 		case 6:
-			c.listEdges()
+			c.listEdges(false)
 		case 7:
 			c.changeGraphType()
 		case 8:
