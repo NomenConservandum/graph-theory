@@ -93,8 +93,14 @@ func addVertex(g *GraphInfo, n *Node) {
 	g.nodes = append(g.nodes, n)
 }
 
-func addEdge(g *GraphInfo, n1 *Node, n2 *Node, weight float64) {
+func addEdge(g *GraphInfo, n1 *Node, n2 *Node, weight float64) error {
+	for _, val := range g.connectionsList[n1] {
+		if val.List[0] == n1 && val.List[1] == n2 {
+			return fmt.Errorf("There is already an edge from '%v' to '%v' already!", *n1, *n2)
+		}
+	}
 	g.connectionsList[n1] = append(g.connectionsList[n1], EdgeConstructor(n1, n2, weight))
+	return nil
 }
 
 func eqByAdress[T any](el1 *T, el2 *T) bool {
@@ -149,18 +155,28 @@ func removeVertex(g *GraphInfo, n *Node) {
 	g.connectionsList = conLstTmp
 }
 
-func addNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) {
-	addEdge(g, n1, n2, 0)
+func addNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) error {
+	return addEdge(g, n1, n2, 0)
 }
 
-func addNonOrientedEdge(g *GraphInfo, n1 *Node, n2 *Node, weight float64) {
-	addEdge(g, n1, n2, weight)
-	addEdge(g, n2, n1, weight)
+func addNonOrientedEdge(g *GraphInfo, n1 *Node, n2 *Node, weight float64) error {
+	err1 := addEdge(g, n1, n2, weight)
+	err2 := addEdge(g, n2, n1, weight)
+	if err1 != nil {
+		return err1
+	} else {
+		return err2
+	}
 }
 
-func addNonOrientedNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) {
-	addEdge(g, n1, n2, 0)
-	addEdge(g, n2, n1, 0)
+func addNonOrientedNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) error {
+	err1 := addEdge(g, n1, n2, 0)
+	err2 := addEdge(g, n2, n1, 0)
+	if err1 != nil {
+		return err1
+	} else {
+		return err2
+	}
 }
 
 // TODO: change it

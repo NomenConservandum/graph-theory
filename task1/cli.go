@@ -27,7 +27,6 @@ import "fmt"
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"strconv"
@@ -103,17 +102,29 @@ func (c *ClientSideGraph) addEdge() {
 	node2 := c.graph.nodes[idx2]
 
 	if c.graph.isOriented {
-		addEdge(c.graph, node1, node2, weight)
-		fmt.Printf("Added oriented edge from '%v' to '%v'", node1.Value, node2.Value)
+		err := addEdge(c.graph, node1, node2, weight)
+		if err != nil {
+			println(err.Error())
+			return
+		}
+		fmt.Print("Added oriented edge from '", node1.Value, "' to '", node2.Value, "'")
 		if c.graph.isWeighted {
-			fmt.Printf(" with weight %.2f", weight)
+			fmt.Print(" with weight ", weight)
 		}
 		fmt.Println()
 	} else {
 		if c.graph.isWeighted {
-			addNonOrientedEdge(c.graph, node1, node2, weight)
+			err := addNonOrientedEdge(c.graph, node1, node2, weight)
+			if err != nil {
+				println(err.Error())
+				return
+			}
 		} else {
-			addNonOrientedNonWeightedEdge(c.graph, node1, node2)
+			err := addNonOrientedNonWeightedEdge(c.graph, node1, node2)
+			if err != nil {
+				println(err.Error())
+				return
+			}
 		}
 		fmt.Printf("Added non-oriented edge between '%v' and '%v'", node1.Value, node2.Value)
 		if c.graph.isWeighted {
@@ -154,8 +165,10 @@ func (c *ClientSideGraph) removeEdge() {
 		return
 	}
 
-	c.listEdges(true)
-
+	err := c.listEdges(true)
+	if err != nil {
+		return
+	}
 	var vt string
 	fmt.Print("Enter edge index to remove: ")
 	fmt.Scanln(&vt)
@@ -183,11 +196,11 @@ func (c *ClientSideGraph) listVertices() {
 	}
 }
 
-func (c *ClientSideGraph) listEdges(mode bool) {
+func (c *ClientSideGraph) listEdges(mode bool) error {
 	fmt.Println("\nEdges:")
 	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
 		fmt.Println("No edges")
-		return
+		return fmt.Errorf("")
 	}
 
 	edgeCount := 0
@@ -208,19 +221,22 @@ func (c *ClientSideGraph) listEdges(mode bool) {
 
 	if edgeCount == 0 {
 		fmt.Println("No edges")
+		return fmt.Errorf("")
 	}
+	return nil
 }
 
 func (c *ClientSideGraph) changeGraphType() {
-	reader := bufio.NewReader(os.Stdin)
-
+	var vt string
 	fmt.Print("Is the graph oriented? (y/n): ")
-	orientedStr, _ := reader.ReadString('\n')
-	oriented := strings.ToLower(strings.TrimSpace(orientedStr)) == "y"
+	fmt.Scanln(&vt)
+	orientedStr := strings.TrimSpace(vt)
+	oriented := strings.ToLower(orientedStr) == "y"
 
 	fmt.Print("Is the graph weighted? (y/n): ")
-	weightedStr, _ := reader.ReadString('\n')
-	weighted := strings.ToLower(strings.TrimSpace(weightedStr)) == "y"
+	fmt.Scanln(&vt)
+	weightedStr := strings.TrimSpace(vt)
+	weighted := strings.ToLower(weightedStr) == "y"
 
 	// Create new graph with new type but keep existing nodes
 	nodes := c.graph.nodes
@@ -247,10 +263,10 @@ func (c *ClientSideGraph) printGraphInfo() {
 }
 
 func (c *ClientSideGraph) loadFromFile() {
-	reader := bufio.NewReader(os.Stdin)
+	var vt string
 	fmt.Print("Enter file path: ")
-	path, _ := reader.ReadString('\n')
-	path = strings.TrimSpace(path)
+	fmt.Scanln(&vt)
+	path := strings.TrimSpace(vt)
 
 	if path == "" {
 		fmt.Println("No file path provided")
@@ -259,16 +275,16 @@ func (c *ClientSideGraph) loadFromFile() {
 
 	// Check if file exists
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		fmt.Printf("File '%s' does not exist\n", path)
+		fmt.Println("File '", path, "' does not exist")
 		return
 	}
 
 	newGraph := GraphFromFileConstructor(path)
 	if newGraph != nil {
 		c.graph = newGraph
-		fmt.Printf("Graph successfully loaded from %s\n", path)
+		fmt.Println("Graph successfully loaded from", path)
 	} else {
-		fmt.Printf("Failed to load graph from %s\n", path)
+		fmt.Println("Failed to load graph from", path)
 	}
 }
 
@@ -278,8 +294,9 @@ func (c *ClientSideGraph) Run() {
 	for {
 		c.printMenu()
 
-		reader := bufio.NewReader(os.Stdin)
-		choiceStr, _ := reader.ReadString('\n')
+		var vt string
+		fmt.Scanln(&vt)
+		choiceStr := strings.TrimSpace(vt)
 		choice, err := strconv.Atoi(strings.TrimSpace(choiceStr))
 
 		if err != nil {
@@ -304,9 +321,9 @@ func (c *ClientSideGraph) Run() {
 			c.changeGraphType()
 		case 8:
 			c.printGraphInfo()
-		case 9: // New case
+		case 9:
 			c.loadFromFile()
-		case 10: // Updated exit
+		case 10:
 			fmt.Println("Goodbye!")
 			return
 		default:
