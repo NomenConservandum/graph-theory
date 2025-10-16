@@ -42,8 +42,9 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("11. TASK 2 Ia: List Knots")
 	fmt.Println("12. TASK 3 Ia")
 	fmt.Println("13. TASK 4 Ib: Remove Isolated Vertices")
-	fmt.Println("14. Adjacency List")
-	fmt.Println("15. Back to main menu")
+	fmt.Println("14. TASK 5 II: Calculate Cyclomatic Number")
+	fmt.Println("15. Adjacency List")
+	fmt.Println("16. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -230,8 +231,10 @@ func (c *CLI) graphOperationsMenu() {
 		case 13:
 			c.task4(currentGraph)
 		case 14:
-			c.adjacencyList(currentGraph)
+			c.task5(currentGraph)
 		case 15:
+			c.adjacencyList(currentGraph)
+		case 16:
 			c.activeGraphIndex = -1
 			return
 		default:
@@ -566,6 +569,37 @@ func (c *CLI) adjacencyList(graph *GraphInfo) {
 			fmt.Printf("%v ", v.List[1].Value)
 		}
 		print("\n")
+	}
+}
+
+func (c *CLI) task5(graph *GraphInfo) {
+	fmt.Println("\n=== Cyclomatic Number Calculation ===")
+
+	if len(graph.nodes) == 0 {
+		fmt.Println("Graph is empty")
+		return
+	}
+
+	cyclomaticNumber := task5Func(graph)
+
+	fmt.Printf("Cyclomatic number (cycle rank): %d\n", cyclomaticNumber)
+	fmt.Printf("This is the minimum number of edges to remove to make the graph acyclic\n")
+
+	// Additional information
+	e := countEdges(graph)
+	v := len(graph.nodes)
+	p := countConnectedComponents(graph)
+
+	fmt.Printf("\nCalculation details:\n")
+	fmt.Printf("Number of edges (e): %d\n", e)
+	fmt.Printf("Number of vertices (v): %d\n", v)
+	fmt.Printf("Number of connected components (p): %d\n", p)
+	fmt.Printf("Formula: mu = e - v + p = %d - %d + %d = %d\n", e, v, p, cyclomaticNumber)
+
+	if cyclomaticNumber == 0 {
+		fmt.Println("\nThe graph is already acyclic!")
+	} else {
+		fmt.Printf("\nYou need to remove at least %d edge(s) to make the graph acyclic\n", cyclomaticNumber)
 	}
 }
 
