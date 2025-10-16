@@ -480,9 +480,23 @@ func (c *CLI) saveToFile(graph *GraphInfo) {
 }
 
 func (c *CLI) listKnots(graph *GraphInfo) {
-	fmt.Println("\nKnots:")
-	// Implement your knots logic here
-	fmt.Println("Knots functionality not implemented yet")
+	fmt.Println("\nVertices with loops (knots):")
+
+	if !graph.isOriented {
+		fmt.Println("This operation only makes sense for directed graphs")
+		return
+	}
+
+	knots := knots(graph)
+
+	if len(knots) == 0 {
+		fmt.Println("No vertices with loops found")
+		return
+	}
+
+	for i, node := range knots {
+		fmt.Printf("%d. Vertex '%v' has self-loop(s)\n", i+1, node.Value)
+	}
 }
 
 func (c *CLI) exitProgram() {
