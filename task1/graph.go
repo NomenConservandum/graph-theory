@@ -114,7 +114,7 @@ func removeElementArrayByFunc[T any](el *T, l []*T, f func(*T, *T) bool) []*T {
 		if f(tmp, el) {
 			continue
 		}
-		lst = append(lst, el)
+		lst = append(lst, tmp)
 	}
 	return lst
 }
@@ -140,19 +140,23 @@ func removeEdge(g *GraphInfo, e *Edge) {
 
 // Removes vertex both from the nodes list and the map: the key and all of the appearances of the vertex in values.
 func removeVertex(g *GraphInfo, n *Node) {
+	// Remove from nodes list
 	g.nodes = removeElementArrayByFunc(n, g.nodes, eqByAdress)
 
-	var conLstTmp map[*Node][]*Edge = make(map[*Node][]*Edge)
+	// Remove the node itself from connectionsList (as a key)
+	delete(g.connectionsList, n)
 
-	var tmpEdge = EdgeConstructor(n, nil, 0)
-	for tmp, lst := range g.connectionsList {
-		if eqByAdress(tmp, n) {
-			continue
+	// Remove all edges that point TO this vertex from other nodes' connection lists
+	for node, edges := range g.connectionsList {
+		var newEdges []*Edge
+		for _, edge := range edges {
+			// Keep edges that don't point to the removed node
+			if edge.List[1] != n {
+				newEdges = append(newEdges, edge)
+			}
 		}
-		conLstTmp[tmp] = removeElementArrayByFunc[Edge](tmpEdge, lst, edgeHasNode)
+		g.connectionsList[node] = newEdges
 	}
-
-	g.connectionsList = conLstTmp
 }
 
 func addNonWeightedEdge(g *GraphInfo, n1 *Node, n2 *Node) error {
