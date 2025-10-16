@@ -1,6 +1,6 @@
 package main
 
-func task4Func(graph *GraphInfo) {
+func task4Func(graph *GraphInfo) []*Node {
 	var isIsolatedList = make(map[*Node]bool, len(graph.connectionsList))
 	for _, edges := range graph.connectionsList {
 		for _, edge := range edges {
@@ -15,8 +15,5 @@ func task4Func(graph *GraphInfo) {
 			nodes = append(nodes, node)
 		}
 	}
-
-	for _, node := range nodes {
-		removeVertex(graph, node)
-	}
+	return nodes
 }
