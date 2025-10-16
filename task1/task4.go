@@ -9,6 +9,7 @@ func task4Func(graph *GraphInfo) []*Node {
 	for _, edges := range graph.connectionsList {
 		for _, edge := range edges {
 			isIsolatedList[edge.List[1]] = true
+			isIsolatedList[edge.List[0]] = true
 		}
 	}
 
