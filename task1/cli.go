@@ -33,21 +33,17 @@ import (
 	"strings"
 )
 
-type ClientSideGraph struct {
+type CLI struct {
 	graph *GraphInfo
 }
 
-func CLI() *ClientSideGraph {
-	return &ClientSideGraph{
+func NewCLI() *CLI {
+	return &CLI{
 		graph: GraphConstructor(false, false), // default: undirected, unweighted
 	}
 }
 
-func (c *ClientSideGraph) printMenu() {
-	fmt.Println("\n=== Graph ClientSideGraph ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10. Save to file\n11.Exit\nChoose an option: ")
-}
-
-func (c *ClientSideGraph) addVertex() {
+func (c *CLI) addVertex() {
 	var vt string
 	fmt.Print("Enter vertex value: ")
 	fmt.Scanln(&vt)
@@ -58,7 +54,7 @@ func (c *ClientSideGraph) addVertex() {
 	fmt.Println("Vertex '", value, "' added successfully")
 }
 
-func (c *ClientSideGraph) addEdge() {
+func (c *CLI) addEdge() {
 	if len(c.graph.nodes) < 2 {
 		fmt.Println("Need at least 2 vertices to add an edge")
 		return
@@ -134,7 +130,7 @@ func (c *ClientSideGraph) addEdge() {
 	}
 }
 
-func (c *ClientSideGraph) removeVertex() {
+func (c *CLI) removeVertex() {
 	if len(c.graph.nodes) == 0 {
 		fmt.Println("No vertices to remove")
 		return
@@ -159,7 +155,7 @@ func (c *ClientSideGraph) removeVertex() {
 
 var edgeLst []*Edge
 
-func (c *ClientSideGraph) removeEdge() {
+func (c *CLI) removeEdge() {
 	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
 		fmt.Println("No edges to remove")
 		return
@@ -184,7 +180,7 @@ func (c *ClientSideGraph) removeEdge() {
 	fmt.Println("Edge from '", edge.List[0].Value, "' to '", edge.List[1].Value, "' has been removed successfully")
 }
 
-func (c *ClientSideGraph) listVertices() {
+func (c *CLI) listVertices() {
 	fmt.Println("\nVertices:")
 	if len(c.graph.nodes) == 0 {
 		fmt.Println("No vertices")
@@ -196,7 +192,7 @@ func (c *ClientSideGraph) listVertices() {
 	}
 }
 
-func (c *ClientSideGraph) listEdges(mode bool) error {
+func (c *CLI) listEdges(mode bool) error {
 	fmt.Println("\nEdges:")
 	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
 		fmt.Println("No edges")
@@ -226,7 +222,7 @@ func (c *ClientSideGraph) listEdges(mode bool) error {
 	return nil
 }
 
-func (c *ClientSideGraph) changeGraphType() {
+func (c *CLI) changeGraphType() {
 	var vt string
 	fmt.Print("Is the graph oriented? (y/n): ")
 	fmt.Scanln(&vt)
@@ -246,7 +242,7 @@ func (c *ClientSideGraph) changeGraphType() {
 	fmt.Printf("Graph type changed: oriented=%v, weighted=%v\n", oriented, weighted)
 }
 
-func (c *ClientSideGraph) printGraphInfo() {
+func (c *CLI) printGraphInfo() {
 	fmt.Println("\nGraph Information:")
 	fmt.Printf("Type: %s, %s\n",
 		map[bool]string{true: "Oriented", false: "Non-oriented"}[c.graph.isOriented],
@@ -262,7 +258,7 @@ func (c *ClientSideGraph) printGraphInfo() {
 	fmt.Printf("Number of edges: %d\n", edgeCount)
 }
 
-func (c *ClientSideGraph) loadFromFile() {
+func (c *CLI) loadFromFile() {
 	var vt string
 	fmt.Print("Enter file path: ")
 	fmt.Scanln(&vt)
@@ -288,7 +284,7 @@ func (c *ClientSideGraph) loadFromFile() {
 	}
 }
 
-func (c *ClientSideGraph) saveToFile() {
+func (c *CLI) saveToFile() {
 	var vt string
 	fmt.Print("Enter file path: ")
 	fmt.Scanln(&vt)
@@ -309,8 +305,35 @@ func (c *ClientSideGraph) saveToFile() {
 	}
 }
 
-func (c *ClientSideGraph) Run() {
-	fmt.Println("Welcome to Graph ClientSideGraph!")
+func (c *CLI) listKnots() error {
+	fmt.Println("\nEdges:")
+	if c.graph.connectionsList == nil || len(c.graph.connectionsList) == 0 {
+		fmt.Println("No edges")
+		return fmt.Errorf("")
+	}
+
+	var knots = knots(c.graph)
+
+	for i, edges := range knots {
+		fmt.Println(i, ". Vertex with value ", edges.List[0], "is a knot")
+	}
+	return nil
+}
+
+func (c *CLI) printMainMenu() {
+	fmt.Println("\n=== Welcome! ===\n1. Add graph\n2. Select graph\n3. Exit\nChoose an option: ")
+}
+
+func (c *CLI) addGraphMenu() {
+	fmt.Println("\n=== Add graph ===\n1. Load from file\n2. Write manually\n3. Exit\nChoose an option: ")
+}
+
+func (c *CLI) printMenu() {
+	fmt.Println("\n=== Graph CLI ===\n1. Add vertex\n2. Add edge\n3. Remove vertex\n4. Remove edge\n5. List vertices\n6. List edges\n7. Change graph type\n8. Print graph info\n9. Load from File\n10. Save to file\n11. List Knots\n12. Exit\nChoose an option: ")
+}
+
+func (c *CLI) Run() {
+	fmt.Println("Welcome to Graph CLI!")
 
 	for {
 		c.printMenu()
@@ -347,6 +370,8 @@ func (c *ClientSideGraph) Run() {
 		case 10:
 			c.saveToFile()
 		case 11:
+			c.listKnots()
+		case 12:
 			fmt.Println("Goodbye!")
 			return
 		default:
