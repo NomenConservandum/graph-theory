@@ -39,9 +39,10 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("8. Print graph info")
 	fmt.Println("9. Load from file")
 	fmt.Println("10. Save to file")
-	fmt.Println("11. List Knots")
-	fmt.Println("12. Adjacency List")
-	fmt.Println("13. Back to main menu")
+	fmt.Println("11. TASK 2: List Knots")
+	fmt.Println("12. TASK 3")
+	fmt.Println("13. Adjacency List")
+	fmt.Println("14. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -224,12 +225,14 @@ func (c *CLI) graphOperationsMenu() {
 		case 11:
 			c.listKnots(currentGraph)
 		case 12:
-			c.adjacencyList(currentGraph)
+			c.task3(currentGraph)
 		case 13:
+			c.adjacencyList(currentGraph)
+		case 14:
 			c.activeGraphIndex = -1
 			return
 		default:
-			fmt.Println("Invalid option. Please choose 1-12.")
+			fmt.Println("Invalid option. Please choose 1-14.")
 		}
 	}
 }
@@ -499,6 +502,37 @@ func (c *CLI) listKnots(graph *GraphInfo) {
 
 	for i, node := range knots {
 		fmt.Printf("%d. Vertex '%v' has self-loop(s)\n", i+1, node.Value)
+	}
+}
+
+func (c *CLI) task3(graph *GraphInfo) {
+	if len(graph.nodes) == 0 {
+		fmt.Println("No vertices to examine")
+		return
+	}
+
+	c.listVertices(graph)
+
+	var input string
+	fmt.Print("Enter main vertex index: ")
+	fmt.Scanln(&input)
+	idx, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || idx < 0 || idx >= len(graph.nodes) {
+		fmt.Println("Invalid vertex index")
+		return
+	}
+
+	nodes := task3Func(graph, graph.nodes[idx])
+
+	if len(nodes) == 0 {
+		fmt.Println("No vertices with half-degree of entrance lesser than that of given Vertex")
+		return
+	} else {
+		fmt.Println("\nVertices which half-degree of entrance is lesser than that of given Vertex:")
+	}
+
+	for i, node := range nodes {
+		fmt.Printf("%d. Vertex '%v' has less half-degree of entrance than that of '%v'\n", i+1, node.Value, graph.nodes[idx].Value)
 	}
 }
 
