@@ -43,8 +43,9 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("12. TASK 3 Ia")
 	fmt.Println("13. TASK 4 Ib: Remove Isolated Vertices")
 	fmt.Println("14. TASK 5 II: Calculate Cyclomatic Number")
-	fmt.Println("15. Adjacency List")
-	fmt.Println("16. Back to main menu")
+	fmt.Println("15. TASK 6 II: Find Vertex with Equal Path Lengths")
+	fmt.Println("16. Adjacency List")
+	fmt.Println("17. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -233,12 +234,14 @@ func (c *CLI) graphOperationsMenu() {
 		case 14:
 			c.task5(currentGraph)
 		case 15:
-			c.adjacencyList(currentGraph)
+			c.findCommonVertexWithEqualPaths(currentGraph)
 		case 16:
+			c.adjacencyList(currentGraph)
+		case 17:
 			c.activeGraphIndex = -1
 			return
 		default:
-			fmt.Println("Invalid option. Please choose 1-15.")
+			fmt.Println("Invalid option. Please choose 1-17.")
 		}
 	}
 }
@@ -600,6 +603,82 @@ func (c *CLI) task5(graph *GraphInfo) {
 		fmt.Println("\nThe graph is already acyclic!")
 	} else {
 		fmt.Printf("\nYou need to remove at least %d edge(s) to make the graph acyclic\n", cyclomaticNumber)
+	}
+}
+
+func (c *CLI) findCommonVertexWithEqualPaths(graph *GraphInfo) {
+	fmt.Println("\n=== Find Vertex with Equal Path Lengths ===")
+
+	if len(graph.nodes) < 3 {
+		fmt.Println("Need at least 3 vertices for this operation")
+		return
+	}
+
+	c.listVertices(graph)
+
+	var input string
+
+	// Get vertex u
+	fmt.Print("Enter index of vertex u: ")
+	fmt.Scanln(&input)
+	idxU, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || idxU < 0 || idxU >= len(graph.nodes) {
+		fmt.Println("Invalid vertex index")
+		return
+	}
+
+	// Get vertex v
+	fmt.Print("Enter index of vertex v: ")
+	fmt.Scanln(&input)
+	idxV, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || idxV < 0 || idxV >= len(graph.nodes) {
+		fmt.Println("Invalid vertex index")
+		return
+	}
+
+	if idxU == idxV {
+		fmt.Println("Vertices u and v must be different")
+		return
+	}
+
+	u := graph.nodes[idxU]
+	v := graph.nodes[idxV]
+
+	fmt.Printf("\nSearching for vertex reachable from both '%v' and '%v' with equal path length...\n", u.Value, v.Value)
+
+	// Try with shortest paths first (more efficient)
+	target, length := findCommonVertexWithEqualPathLength(graph, u, v)
+
+	if target == nil {
+		// If no result with shortest paths, try with all possible paths
+		fmt.Println("No vertex found with shortest paths of equal length. Trying all possible paths...")
+		target, length = findCommonVertexWithEqualPathLengthAllPaths(graph, u, v)
+	}
+
+	if target != nil {
+		fmt.Printf("✓ Found vertex: '%v'\n", target.Value)
+		fmt.Printf("Path length from '%v': %d edges\n", u.Value, length)
+		fmt.Printf("Path length from '%v': %d edges\n", v.Value, length)
+		fmt.Printf("Total path length: %d edges from each starting vertex\n", length)
+	} else {
+		fmt.Println("✗ No vertex found that is reachable from both u and v with paths of equal length")
+
+		// Provide some diagnostic information
+		distancesFromU := bfsWithDistances(graph, u)
+		distancesFromV := bfsWithDistances(graph, v)
+
+		fmt.Println("\nDiagnostic info:")
+		fmt.Printf("Vertices reachable from '%v': %d\n", u.Value, len(distancesFromU))
+		fmt.Printf("Vertices reachable from '%v': %d\n", v.Value, len(distancesFromV))
+
+		// Find common reachable vertices (regardless of path length)
+		commonVertices := 0
+		for vertex := range distancesFromU {
+			if _, exists := distancesFromV[vertex]; exists {
+				commonVertices++
+			}
+		}
+		fmt.Printf("Common reachable vertices: %d\n", commonVertices)
 	}
 }
 
