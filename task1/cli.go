@@ -40,7 +40,8 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("9. Load from file")
 	fmt.Println("10. Save to file")
 	fmt.Println("11. List Knots")
-	fmt.Println("12. Back to main menu")
+	fmt.Println("12. Adjacency List")
+	fmt.Println("13. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -223,6 +224,8 @@ func (c *CLI) graphOperationsMenu() {
 		case 11:
 			c.listKnots(currentGraph)
 		case 12:
+			c.adjacencyList(currentGraph)
+		case 13:
 			c.activeGraphIndex = -1
 			return
 		default:
@@ -496,6 +499,24 @@ func (c *CLI) listKnots(graph *GraphInfo) {
 
 	for i, node := range knots {
 		fmt.Printf("%d. Vertex '%v' has self-loop(s)\n", i+1, node.Value)
+	}
+}
+
+func (c *CLI) adjacencyList(graph *GraphInfo) {
+	fmt.Println("\nAdjacency List:")
+
+	if len(graph.connectionsList) == 0 {
+		fmt.Println("No edges")
+		return
+	}
+
+	for nd, edges := range graph.connectionsList {
+		fmt.Printf("%v: ", nd.Value)
+		for _, v := range edges {
+			fmt.Printf("%v ", v.List[1].Value)
+			// print(v.List[1].Value, " ")
+		}
+		print("\n")
 	}
 }
 
