@@ -91,6 +91,7 @@ func GraphConstructor(isOriented bool, isWeighted bool) *GraphInfo {
 
 func addVertex(g *GraphInfo, n *Node) {
 	g.nodes = append(g.nodes, n)
+	g.connectionsList[n] = nil
 }
 
 func addEdge(g *GraphInfo, n1 *Node, n2 *Node, weight float64) error {
