@@ -548,7 +548,6 @@ func (c *CLI) adjacencyList(graph *GraphInfo) {
 		fmt.Printf("%v: ", nd.Value)
 		for _, v := range edges {
 			fmt.Printf("%v ", v.List[1].Value)
-			// print(v.List[1].Value, " ")
 		}
 		print("\n")
 	}
