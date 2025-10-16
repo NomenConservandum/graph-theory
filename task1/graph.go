@@ -268,17 +268,19 @@ func parseGraphType(graph *GraphInfo, line string) {
 	}
 
 	typeStr := strings.ToUpper(strings.TrimSpace(parts[1]))
+	words := strings.Fields(typeStr) // Split into individual words
 
-	if strings.Contains(typeStr, "DIRECTED") {
-		graph.isOriented = true
-	} else if strings.Contains(typeStr, "UNDIRECTED") {
-		graph.isOriented = false
-	}
-
-	if strings.Contains(typeStr, "WEIGHTED") {
-		graph.isWeighted = true
-	} else if strings.Contains(typeStr, "UNWEIGHTED") {
-		graph.isWeighted = false
+	for _, word := range words {
+		switch word {
+		case "DIRECTED":
+			graph.isOriented = true
+		case "UNDIRECTED":
+			graph.isOriented = false
+		case "WEIGHTED":
+			graph.isWeighted = true
+		case "UNWEIGHTED":
+			graph.isWeighted = false
+		}
 	}
 }
 
