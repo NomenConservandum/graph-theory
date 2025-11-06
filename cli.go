@@ -44,8 +44,9 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("13. TASK 4 Ib: Remove Isolated Vertices")
 	fmt.Println("14. TASK 5 II: Calculate Cyclomatic Number")
 	fmt.Println("15. TASK 6 II: Find Vertex with Equal Path Lengths")
-	fmt.Println("16. Adjacency List")
-	fmt.Println("17. Back to main menu")
+	fmt.Println("16. TASK 7: Prim")
+	fmt.Println("17. Adjacency List")
+	fmt.Println("18. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -236,12 +237,14 @@ func (c *CLI) graphOperationsMenu() {
 		case 15:
 			c.findCommonVertexWithEqualPaths(currentGraph)
 		case 16:
-			c.adjacencyList(currentGraph)
+			c.findMinimumSpanningTreePrim(currentGraph)
 		case 17:
+			c.adjacencyList(currentGraph)
+		case 18:
 			c.activeGraphIndex = -1
 			return
 		default:
-			fmt.Println("Invalid option. Please choose 1-17.")
+			fmt.Println("Invalid option. Please choose 1-18.")
 		}
 	}
 }
@@ -680,6 +683,77 @@ func (c *CLI) findCommonVertexWithEqualPaths(graph *GraphInfo) {
 		}
 		fmt.Printf("Common reachable vertices: %d\n", commonVertices)
 	}
+}
+
+// CLI wrapper for Prim's algorithm
+func (c *CLI) findMinimumSpanningTreePrim(graph *GraphInfo) {
+	fmt.Println("\n=== Prim's Algorithm - Minimum Spanning Tree ===")
+
+	if graph.isOriented {
+		fmt.Println("Prim's algorithm only works for undirected graphs")
+		return
+	}
+
+	if len(graph.nodes) == 0 {
+		fmt.Println("Graph is empty")
+		return
+	}
+
+	// Let user choose start vertex or use automatic selection
+	c.listVertices(graph)
+
+	var input string
+	fmt.Print("Enter starting vertex index (or press Enter for automatic): ")
+	fmt.Scanln(&input)
+
+	var result *PrimResult
+	if strings.TrimSpace(input) == "" {
+		// Automatic selection - try all starts and pick best
+		fmt.Println("Using automatic start vertex selection...")
+		result = primAllStarts(graph)
+	} else {
+		// User specified start vertex
+		idx, err := strconv.Atoi(strings.TrimSpace(input))
+		if err != nil || idx < 0 || idx >= len(graph.nodes) {
+			fmt.Println("Invalid vertex index, using automatic selection")
+			result = primAllStarts(graph)
+		} else {
+			start := graph.nodes[idx]
+			fmt.Printf("Starting from vertex: %v\n", start.Value)
+			result = prim(graph, start)
+		}
+	}
+
+	// Display results
+	if !result.IsConnected {
+		fmt.Println("Graph is not connected. Cannot form a spanning tree.")
+		fmt.Printf("MST edges found for connected component: %d\n", len(result.MSTEdges))
+		fmt.Printf("Total weight: %.2f\n", result.TotalWeight)
+	} else {
+		fmt.Println("✓ Minimum Spanning Tree found!")
+		fmt.Printf("Total weight: %.2f\n", result.TotalWeight)
+		fmt.Printf("Number of edges in MST: %d\n", len(result.MSTEdges))
+	}
+
+	// Display MST edges
+	fmt.Println("\nEdges in Minimum Spanning Tree:")
+	if len(result.MSTEdges) == 0 {
+		fmt.Println("No edges in MST")
+		return
+	}
+
+	for i, edge := range result.MSTEdges {
+		fmt.Printf("%d. %v -- %v", i+1, edge.List[0].Value, edge.List[1].Value)
+		if graph.isWeighted {
+			fmt.Printf(" (weight: %.2f)", edge.Weight)
+		}
+		fmt.Println()
+	}
+
+	// Display original graph info for comparison
+	originalEdges := countEdges(graph)
+	fmt.Printf("\nOriginal graph: %d edges\n", originalEdges)
+	fmt.Printf("MST reduction: %d edges removed\n", originalEdges-len(result.MSTEdges))
 }
 
 func (c *CLI) exitProgram() {

@@ -1,0 +1,17 @@
+TYPE: UNDIRECTED WEIGHTED
+VERTICES: A,B,C,D,E
+EDGES:
+A-B: 4
+A-C: 2
+B-C: 1
+B-D: 5
+C-D: 8
+C-E: 10
+D-E: 2
+
+
+# B-C: 1
+# C-A: 2
+# D-E: 2
+# B-D: 5
+# Total weight: 10
