@@ -730,6 +730,28 @@ func (c *CLI) findVerticesWithinDistance(graph *GraphInfo) {
 	}
 }
 
+// CLI wrapper для упрощённой версии алгоритма Флойда-Уоршелла
+func (c *CLI) findAllPairsShortestPathsSimple(graph *GraphInfo) {
+	fmt.Println("\n=== Floyd-Warshall algorithm - Minimal Distances Between Each Pair of Vertices ===")
+
+	if len(graph.nodes) == 0 {
+		fmt.Println("The graph is empty")
+		return
+	}
+
+	distances, hasNegativeCycle := floydWarshallSimple(graph)
+
+	if hasNegativeCycle {
+		fmt.Println("WARNING! The graph contains a negative cycle!")
+		fmt.Println("The results may be incorrect")
+		return
+	}
+
+	// Вывод матрицы расстояний
+	fmt.Println()
+	printDistanceMatrix(graph.nodes, distances)
+}
+
 func (c *CLI) exitProgram() {
 	var input string
 	fmt.Print("Do you want to exit? All of your data will be lost, if not saved. (y/n): ")
@@ -800,7 +822,8 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("16. TASK 6 II: Find Vertex with Equal Path Lengths")
 	fmt.Println("17. TASK 7: Prim")
 	fmt.Println("18. TASK 8 IV a: Find Vertices Within Distance N")
-	fmt.Println("19. Back to main menu")
+	fmt.Println("19. TASK 9 IV b: All Pairs Shortest Paths (Floyd-Warshall)")
+	fmt.Println("20. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -861,6 +884,8 @@ func (c *CLI) graphOperationsMenu() {
 		case 18:
 			c.findVerticesWithinDistance(currentGraph)
 		case 19:
+			c.findAllPairsShortestPathsSimple(currentGraph)
+		case 20:
 			c.activeGraphIndex = -1
 			return
 		default:
