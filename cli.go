@@ -27,29 +27,6 @@ func (c *CLI) printMainMenu() {
 	fmt.Print("Choose an option: ")
 }
 
-func (c *CLI) printGraphMenu() {
-	fmt.Println("\n=== Graph Operations ===")
-	fmt.Println("1. Add vertex")
-	fmt.Println("2. Add edge")
-	fmt.Println("3. Remove vertex")
-	fmt.Println("4. Remove edge")
-	fmt.Println("5. List vertices")
-	fmt.Println("6. List edges")
-	fmt.Println("7. Change graph type")
-	fmt.Println("8. Print graph info")
-	fmt.Println("9. Load from file")
-	fmt.Println("10. Save to file")
-	fmt.Println("11. TASK 2 Ia: List Knots")
-	fmt.Println("12. TASK 3 Ia")
-	fmt.Println("13. TASK 4 Ib: Remove Isolated Vertices")
-	fmt.Println("14. TASK 5 II: Calculate Cyclomatic Number")
-	fmt.Println("15. TASK 6 II: Find Vertex with Equal Path Lengths")
-	fmt.Println("16. TASK 7: Prim")
-	fmt.Println("17. Adjacency List")
-	fmt.Println("18. Back to main menu")
-	fmt.Print("Choose an option: ")
-}
-
 func (c *CLI) addGraphMenu() {
 	fmt.Println("\n=== Add Graph ===")
 	fmt.Println("1. Create graph manually")
@@ -183,69 +160,6 @@ func (c *CLI) loadGraphFromFile() {
 		c.graphOperationsMenu()
 	} else {
 		fmt.Printf("Failed to load graph from %s\n", path)
-	}
-}
-
-func (c *CLI) graphOperationsMenu() {
-	if c.activeGraphIndex == -1 {
-		fmt.Println("No active graph selected.")
-		return
-	}
-
-	currentGraph := c.graphs[c.activeGraphIndex]
-
-	for {
-		c.printGraphMenu()
-
-		var input string
-		fmt.Scanln(&input)
-		choice, err := strconv.Atoi(strings.TrimSpace(input))
-		if err != nil {
-			fmt.Println("Invalid input. Please enter a number.")
-			continue
-		}
-
-		switch choice {
-		case 1:
-			c.addVertex(currentGraph)
-		case 2:
-			c.addEdge(currentGraph)
-		case 3:
-			c.removeVertex(currentGraph)
-		case 4:
-			c.removeEdge(currentGraph)
-		case 5:
-			c.listVertices(currentGraph)
-		case 6:
-			c.listEdges(currentGraph, false)
-		case 7:
-			c.changeGraphType(currentGraph)
-		case 8:
-			c.printGraphInfo(currentGraph)
-		case 9:
-			c.loadFromFile(currentGraph)
-		case 10:
-			c.saveToFile(currentGraph)
-		case 11:
-			c.listKnots(currentGraph)
-		case 12:
-			c.task3(currentGraph)
-		case 13:
-			c.task4(currentGraph)
-		case 14:
-			c.task5(currentGraph)
-		case 15:
-			c.findCommonVertexWithEqualPaths(currentGraph)
-		case 16:
-			c.findMinimumSpanningTreePrim(currentGraph)
-		case 17:
-			c.adjacencyList(currentGraph)
-		case 18:
-			c.activeGraphIndex = -1
-			return
-		default:
-			fmt.Println("Invalid option. Please choose 1-18.")
-		}
 	}
 }
 
@@ -756,6 +670,66 @@ func (c *CLI) findMinimumSpanningTreePrim(graph *GraphInfo) {
 	fmt.Printf("MST reduction: %d edges removed\n", originalEdges-len(result.MSTEdges))
 }
 
+// CLI wrapper для поиска вершин в пределах расстояния
+func (c *CLI) findVerticesWithinDistance(graph *GraphInfo) {
+	fmt.Println("\n=== Search Within Distance N ===")
+
+	if !graph.isOriented {
+		fmt.Println("This operation is intended for use upon oriented graphs only")
+		return
+	}
+
+	if len(graph.nodes) == 0 {
+		fmt.Println("The graph is empty")
+		return
+	}
+
+	// Показываем список вершин
+	c.listVertices(graph)
+
+	var input string
+
+	// Выбор стартовой вершины
+	fmt.Print("Enter the start vertex index: ")
+	fmt.Scanln(&input)
+	startIdx, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || startIdx < 0 || startIdx >= len(graph.nodes) {
+		fmt.Println("Invalid vertex index!")
+		return
+	}
+
+	startVertex := graph.nodes[startIdx]
+
+	// Ввод максимального расстояния
+	fmt.Print("Enter N: ")
+	fmt.Scanln(&input)
+	maxDist, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || maxDist < 0 {
+		fmt.Println("Invalid distance value!")
+		return
+	}
+
+	// Выполняем поиск
+	vertices := findVerticesWithinDistance(graph, startVertex, maxDist)
+
+	// Выводим результаты
+	fmt.Printf("\nSearch Results:\n")
+	fmt.Printf("Starting vertex: '%v'\n", startVertex.Value)
+	fmt.Printf("N: %d\n", maxDist)
+
+	if len(vertices) == 0 {
+		fmt.Println("No vertices within the given distance")
+		return
+	}
+
+	fmt.Printf("Number of vertices found: %d\n", len(vertices))
+	fmt.Println("Vertices within distance N:")
+
+	for i, vertex := range vertices {
+		fmt.Printf("%d. '%v'\n", i+1, vertex.Value)
+	}
+}
+
 func (c *CLI) exitProgram() {
 	var input string
 	fmt.Print("Do you want to exit? All of your data will be lost, if not saved. (y/n): ")
@@ -802,6 +776,95 @@ func (c *CLI) Run() {
 			c.exitProgram()
 		default:
 			fmt.Println("Invalid option. Please choose 1-3.")
+		}
+	}
+}
+
+func (c *CLI) printGraphMenu() {
+	fmt.Println("\n=== Graph Operations ===")
+	fmt.Println("1. Add vertex")
+	fmt.Println("2. Add edge")
+	fmt.Println("3. Remove vertex")
+	fmt.Println("4. Remove edge")
+	fmt.Println("5. List vertices")
+	fmt.Println("6. List edges")
+	fmt.Println("7. Adjacency List")
+	fmt.Println("8. Change graph type")
+	fmt.Println("9. Print graph info")
+	fmt.Println("10. Load from file")
+	fmt.Println("11. Save to file")
+	fmt.Println("12. TASK 2 Ia: List Knots")
+	fmt.Println("13. TASK 3 Ia")
+	fmt.Println("14. TASK 4 Ib: Remove Isolated Vertices")
+	fmt.Println("15. TASK 5 II: Calculate Cyclomatic Number")
+	fmt.Println("16. TASK 6 II: Find Vertex with Equal Path Lengths")
+	fmt.Println("17. TASK 7: Prim")
+	fmt.Println("18. TASK 8 IV a: Find Vertices Within Distance N")
+	fmt.Println("19. Back to main menu")
+	fmt.Print("Choose an option: ")
+}
+
+func (c *CLI) graphOperationsMenu() {
+	if c.activeGraphIndex == -1 {
+		fmt.Println("No active graph selected.")
+		return
+	}
+
+	currentGraph := c.graphs[c.activeGraphIndex]
+
+	for {
+		c.printGraphMenu()
+
+		var input string
+		fmt.Scanln(&input)
+		choice, err := strconv.Atoi(strings.TrimSpace(input))
+		if err != nil {
+			fmt.Println("Invalid input. Please enter a number.")
+			continue
+		}
+
+		switch choice {
+		case 1:
+			c.addVertex(currentGraph)
+		case 2:
+			c.addEdge(currentGraph)
+		case 3:
+			c.removeVertex(currentGraph)
+		case 4:
+			c.removeEdge(currentGraph)
+		case 5:
+			c.listVertices(currentGraph)
+		case 6:
+			c.listEdges(currentGraph, false)
+		case 7:
+			c.adjacencyList(currentGraph)
+		case 8:
+			c.changeGraphType(currentGraph)
+		case 9:
+			c.printGraphInfo(currentGraph)
+		case 10:
+			c.loadFromFile(currentGraph)
+		case 11:
+			c.saveToFile(currentGraph)
+		case 12:
+			c.listKnots(currentGraph)
+		case 13:
+			c.task3(currentGraph)
+		case 14:
+			c.task4(currentGraph)
+		case 15:
+			c.task5(currentGraph)
+		case 16:
+			c.findCommonVertexWithEqualPaths(currentGraph)
+		case 17:
+			c.findMinimumSpanningTreePrim(currentGraph)
+		case 18:
+			c.findVerticesWithinDistance(currentGraph)
+		case 19:
+			c.activeGraphIndex = -1
+			return
+		default:
+			fmt.Println("Invalid option. Please choose 1-19.")
 		}
 	}
 }
