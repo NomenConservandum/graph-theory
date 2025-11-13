@@ -704,7 +704,8 @@ func (c *CLI) findVerticesWithinDistance(graph *GraphInfo) {
 	// Ввод максимального расстояния
 	fmt.Print("Enter N: ")
 	fmt.Scanln(&input)
-	maxDist, err := strconv.Atoi(strings.TrimSpace(input))
+
+	maxDist, err := strconv.ParseFloat(input, 64)
 	if err != nil || maxDist < 0 {
 		fmt.Println("Invalid distance value!")
 		return
@@ -716,7 +717,7 @@ func (c *CLI) findVerticesWithinDistance(graph *GraphInfo) {
 	// Выводим результаты
 	fmt.Printf("\nSearch Results:\n")
 	fmt.Printf("Starting vertex: '%v'\n", startVertex.Value)
-	fmt.Printf("N: %d\n", maxDist)
+	fmt.Printf("N: %f\n", maxDist)
 
 	if len(vertices) == 0 {
 		fmt.Println("No vertices within the given distance")
