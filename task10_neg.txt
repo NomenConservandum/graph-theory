@@ -1,0 +1,10 @@
+# has a negative loop cycle
+TYPE: DIRECTED WEIGHTED
+VERTICES: A,B,C,D,E
+EDGES:
+A->B: 4
+A->C: 2
+B->C: -3
+C->D: 1
+D->B: -2
+D->E: 3

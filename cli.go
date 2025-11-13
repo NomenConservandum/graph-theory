@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -752,6 +753,75 @@ func (c *CLI) findAllPairsShortestPathsSimple(graph *GraphInfo) {
 	printDistanceMatrix(graph.nodes, distances)
 }
 
+// CLI wrapper для алгоритма Беллмана-Форда
+func (c *CLI) findShortestPathsFromVertex(graph *GraphInfo) {
+	fmt.Println("\n=== Bellman-Ford algorithm - Shortest Paths From Vertex U ===")
+
+	if len(graph.nodes) == 0 {
+		fmt.Println("The graph is empty")
+		return
+	}
+
+	// Показываем список вершин
+	c.listVertices(graph)
+
+	var input string
+	fmt.Print("Enter starting vertex index: ")
+	fmt.Scanln(&input)
+	startIdx, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || startIdx < 0 || startIdx >= len(graph.nodes) {
+		fmt.Println("Invalid vertex index")
+		return
+	}
+
+	startVertex := graph.nodes[startIdx]
+
+	result := bellmanFord(graph, startVertex)
+
+	// Вывод результатов
+	c.printBellmanFordResults(graph, startVertex, result)
+}
+
+// printBellmanFordResults выводит результаты алгоритма Беллмана-Форда
+func (c *CLI) printBellmanFordResults(graph *GraphInfo, start *Node, result *BellmanFordResult) {
+	fmt.Printf("\nResults for starting vertex '%v':\n", start.Value)
+
+	if result.HasNegativeCycle {
+		fmt.Println("WARNING! The graph contains a negative cycle!")
+		fmt.Println("Some vertices can have infinetily large distance (-INF)")
+	}
+
+	fmt.Println("\nShortest distances to the vertex:")
+	for _, node := range graph.nodes {
+		if node == start {
+			continue // Пропускаем стартовую вершину
+		}
+
+		distance := result.Distances[node]
+		fmt.Printf("  From '%v': ", node.Value)
+
+		if math.IsInf(distance, -1) {
+			fmt.Println("-INF (Reachable through a negative cycle)")
+		} else if math.IsInf(distance, 1) {
+			fmt.Println("INF (Unreachable)")
+		} else {
+			fmt.Printf("%.2f", distance)
+
+			// Показываем путь, если он существует
+			if path := result.reconstructPath(node); path != nil {
+				fmt.Printf(" | PATH: ")
+				for i, pathNode := range path {
+					if i > 0 {
+						fmt.Print(" -> ")
+					}
+					fmt.Printf("'%v'", pathNode.Value)
+				}
+			}
+			fmt.Println()
+		}
+	}
+}
+
 func (c *CLI) exitProgram() {
 	var input string
 	fmt.Print("Do you want to exit? All of your data will be lost, if not saved. (y/n): ")
@@ -823,7 +893,8 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("17. TASK 7: Prim")
 	fmt.Println("18. TASK 8 IV a: Find Vertices Within Distance N")
 	fmt.Println("19. TASK 9 IV b: All Pairs Shortest Paths (Floyd-Warshall)")
-	fmt.Println("20. Back to main menu")
+	fmt.Println("20. TASK 10 IV c: Single Source Shortest Paths (Bellman-Ford)")
+	fmt.Println("21. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -886,10 +957,12 @@ func (c *CLI) graphOperationsMenu() {
 		case 19:
 			c.findAllPairsShortestPathsSimple(currentGraph)
 		case 20:
+			c.findShortestPathsFromVertex(currentGraph)
+		case 21:
 			c.activeGraphIndex = -1
 			return
 		default:
-			fmt.Println("Invalid option. Please choose 1-19.")
+			fmt.Println("Invalid option. Please choose 1-20.")
 		}
 	}
 }
