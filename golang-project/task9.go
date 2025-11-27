@@ -67,7 +67,7 @@ func floydWarshallSimple(g *GraphInfo) (map[*Node]map[*Node]float64, bool) {
 
 // printDistanceMatrix выводит матрицу расстояний в простом формате
 func printDistanceMatrix(nodes []*Node, dist map[*Node]map[*Node]float64) {
-	fmt.Println("Матрица кратчайших расстояний:")
+	fmt.Println("Shortest Paths Matrix:")
 	fmt.Print("     ")
 	for _, node := range nodes {
 		fmt.Printf("%5v", fmt.Sprintf("%v", node.Value))

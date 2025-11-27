@@ -574,12 +574,12 @@ func (c *CLI) findCommonVertexWithEqualPaths(graph *GraphInfo) {
 	}
 
 	if target != nil {
-		fmt.Printf("✓ Found vertex: '%v'\n", target.Value)
+		fmt.Printf("Found vertex: '%v'\n", target.Value)
 		fmt.Printf("Path length from '%v': %d edges\n", u.Value, length)
 		fmt.Printf("Path length from '%v': %d edges\n", v.Value, length)
 		fmt.Printf("Total path length: %d edges from each starting vertex\n", length)
 	} else {
-		fmt.Println("✗ No vertex found that is reachable from both u and v with paths of equal length")
+		fmt.Println("No vertex found that is reachable from both u and v with paths of equal length")
 
 		// Provide some diagnostic information
 		distancesFromU := bfsWithDistances(graph, u)
@@ -645,7 +645,7 @@ func (c *CLI) findMinimumSpanningTreePrim(graph *GraphInfo) {
 		fmt.Printf("MST edges found for connected component: %d\n", len(result.MSTEdges))
 		fmt.Printf("Total weight: %.2f\n", result.TotalWeight)
 	} else {
-		fmt.Println("✓ Minimum Spanning Tree found!")
+		fmt.Println("Minimum Spanning Tree found!")
 		fmt.Printf("Total weight: %.2f\n", result.TotalWeight)
 		fmt.Printf("Number of edges in MST: %d\n", len(result.MSTEdges))
 	}

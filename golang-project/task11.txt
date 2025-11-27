@@ -1,0 +1,10 @@
+TYPE: DIRECTED WEIGHTED
+VERTICES: s,a,b,c,t
+EDGES:
+s->a: 10
+s->b: 5
+a->b: 15
+a->c: 10
+b->c: 10
+b->t: 10
+c->t: 10
