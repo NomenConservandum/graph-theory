@@ -823,6 +823,109 @@ func (c *CLI) printBellmanFordResults(graph *GraphInfo, start *Node, result *Bel
 	}
 }
 
+// CLI wrapper для алгоритма Эдмондса-Карпа
+func (c *CLI) findMaxFlowEdmondsKarp(graph *GraphInfo) {
+	fmt.Println("\n=== Edmond-Karp algorithm - Max Flow ===")
+
+	if len(graph.nodes) < 2 {
+		fmt.Println("Needed at least 2 vertices")
+		return
+	}
+
+	// Проверяем, что граф может быть потоковой сетью
+	if !graph.isWeighted {
+		fmt.Println("\033[31mWarning\033[0m: The graph is unweighed, used capacity equals to 1")
+	}
+
+	// Показываем список вершин
+	c.listVertices(graph)
+
+	var input string
+
+	// Выбор истока (source)
+	fmt.Print("Enter source vertex index: ")
+	fmt.Scanln(&input)
+	sourceIdx, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || sourceIdx < 0 || sourceIdx >= len(graph.nodes) {
+		fmt.Println("\033[31mInvalid vertex index\033[0m")
+		return
+	}
+
+	// Выбор стока (sink)
+	fmt.Print("Enter sink vertex index: ")
+	fmt.Scanln(&input)
+	sinkIdx, err := strconv.Atoi(strings.TrimSpace(input))
+	if err != nil || sinkIdx < 0 || sinkIdx >= len(graph.nodes) {
+		fmt.Println("\033[31mInvalid vertex index\033[0m")
+		return
+	}
+
+	source := graph.nodes[sourceIdx]
+	sink := graph.nodes[sinkIdx]
+
+	if source == sink {
+		fmt.Println("\033[31mThe source and the sink must not be the same vertex\033[0m")
+		return
+	}
+	// Создаём потоковую сеть
+	network := createFlowNetwork(graph)
+
+	// Запускаем алгоритм Эдмондса-Карпа
+	result := edmondsKarp(network, source, sink)
+
+	// Выводим результаты
+	c.printMaxFlowResults(network, result)
+}
+
+// printMaxFlowResults выводит результаты поиска максимального потока
+func (c *CLI) printMaxFlowResults(network *FlowNetwork, result *MaxFlowResult) {
+	fmt.Printf("\n=== Max Flow Search Results ===\n")
+	fmt.Printf("Source: '%v'\n", result.Source.Value)
+	fmt.Printf("Sink: '%v'\n", result.Sink.Value)
+	fmt.Printf("Max Flow Value: %.2f\n", result.MaxFlowValue)
+
+	// Выводим поток по каждому ребру
+	fmt.Println("\nEdge flow distribution:")
+	hasFlow := false
+	for _, edge := range network.Edges {
+		flow := result.Flow[edge]
+		if flow > 0 {
+			hasFlow = true
+			fmt.Printf("  From %v to %v: %.2f / %.2f\n",
+				edge.From.Value, edge.To.Value, flow, edge.Capacity)
+		}
+	}
+
+	if !hasFlow {
+		fmt.Println("  No zero flows")
+	}
+
+	totalCapacity := 0.0
+	// Выводим минимальный разрез
+	if len(result.MinCut) > 0 {
+		fmt.Println("\nMinimal cut of an edge:")
+		for _, edge := range result.MinCut {
+			fmt.Printf("  from %v to %v (capacity: %.2f)\n",
+				edge.From.Value, edge.To.Value, edge.Capacity)
+			totalCapacity += edge.Capacity
+		}
+		fmt.Printf("Cut's total capacity: %.2f\n", totalCapacity)
+	}
+
+	// Проверка корректности (величина потока = capacity разреза)
+	if len(result.MinCut) > 0 {
+		fmt.Printf("Probe: Flow value is equal to minimal cut's capacity (%.2f = %.2f)\n",
+			result.MaxFlowValue, totalCapacity)
+	}
+	/*
+		// Статистика
+		fmt.Printf("\nСтатистика:\n")
+		fmt.Printf("Всего вершин в сети: %d\n", len(network.Nodes))
+		fmt.Printf("Всего рёбер в сети: %d\n", len(network.Edges))
+		fmt.Printf("Рёбер в минимальном разрезе: %d\n", len(result.MinCut))
+	*/
+}
+
 func (c *CLI) exitProgram() {
 	var input string
 	fmt.Print("Do you want to exit? All of your data will be lost, if not saved. (y/n): ")
@@ -895,7 +998,8 @@ func (c *CLI) printGraphMenu() {
 	fmt.Println("18. TASK 8 IV a: Find Vertices Within Distance N")
 	fmt.Println("19. TASK 9 IV b: All Pairs Shortest Paths (Floyd-Warshall)")
 	fmt.Println("20. TASK 10 IV c: Single Source Shortest Paths (Bellman-Ford)")
-	fmt.Println("21. Back to main menu")
+	fmt.Println("21. TASK 11 V (Потоки): Max Flow (Edmonds-Karp)")
+	fmt.Println("22. Back to main menu")
 	fmt.Print("Choose an option: ")
 }
 
@@ -960,10 +1064,12 @@ func (c *CLI) graphOperationsMenu() {
 		case 20:
 			c.findShortestPathsFromVertex(currentGraph)
 		case 21:
+			c.findMaxFlowEdmondsKarp(currentGraph)
+		case 22:
 			c.activeGraphIndex = -1
 			return
 		default:
-			fmt.Println("Invalid option. Please choose 1-20.")
+			fmt.Println("Invalid option. Please choose 1-21.")
 		}
 	}
 }
