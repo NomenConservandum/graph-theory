@@ -4,10 +4,10 @@ from math import cos, sin, pi, hypot
 class HamiltonGraphGame:
     def __init__(self, master):
         self.master = master
-        self.master.title("Гамильтонова игра: додекаэдр (реальный граф)")
+        self.master.title("Гамильтонова игра: додекаэдр")
         self.vertex_radius = 14
         self.padding = 40
-        self.canvas_size = 700
+        self.canvas_size = 600
 
         self.canvas = tk.Canvas(master, width=self.canvas_size, height=self.canvas_size, bg="white")
         self.canvas.pack()
@@ -46,21 +46,21 @@ class HamiltonGraphGame:
             (cx + r1 * cos(2*pi*3/5 - pi/2), cy + r1 * sin(2*pi*3/5 - pi/2)),  # 3
             (cx + r1 * cos(2*pi*4/5 - pi/2), cy + r1 * sin(2*pi*4/5 - pi/2)),  # 4
             
-            # Вершины 6-10: теперь ВНУТРЕННЕЕ кольцо (используем r3, но оставляем смещение формы)
+            # Вершины 6-10: внутреннее кольцо
             (cx + r2 * cos(2*pi*0/5 - pi/2), cy + r2 * sin(2*pi*0/5 - pi/2)),  # 5
             (cx + r2 * cos(2*pi*3/5 + pi/2), cy + r2 * sin(2*pi*3/5 + pi/2)),  # 6
             (cx + r2 * cos(2*pi*1/5 - pi/2), cy + r2 * sin(2*pi*1/5 - pi/2)),  # 7
             (cx + r2 * cos(2*pi*4/5 + pi/2), cy + r2 * sin(2*pi*4/5 + pi/2)),  # 8
             (cx + r2 * cos(2*pi*2/5 - pi/2), cy + r2 * sin(2*pi*2/5 - pi/2)),  # 9
             
-            # Вершины 11-15: теперь СРЕДНЕЕ кольцо (используем r2, форма как у прежнего внутреннего)
+            # Вершины 11-15: среднее кольцо
             (cx + r2 * cos(2*pi*0/5 + pi/2), cy + r2 * sin(2*pi*0/5 + pi/2)),  # 10
             (cx + r2 * cos(2*pi*3/5 - pi/2), cy + r2 * sin(2*pi*3/5 - pi/2)),  # 11
             (cx + r2 * cos(2*pi*1/5 + pi/2), cy + r2 * sin(2*pi*1/5 + pi/2)),  # 12
             (cx + r2 * cos(2*pi*4/5 - pi/2), cy + r2 * sin(2*pi*4/5 - pi/2)),  # 13
             (cx + r2 * cos(2*pi*2/5 + pi/2), cy + r2 * sin(2*pi*2/5 + pi/2)),  # 14
             
-            # Вершины 16-20: нижнее кольцо оставляем как было (на r2)
+            # Вершины 16-20: нижнее кольцо
             (cx + r3 * cos(2*pi*4/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*4/5 - pi/2 + pi/5)),  # 15
             (cx + r3 * cos(2*pi*0/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*0/5 - pi/2 + pi/5)),  # 16
             (cx + r3 * cos(2*pi*1/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*1/5 - pi/2 + pi/5)),  # 17
@@ -68,7 +68,6 @@ class HamiltonGraphGame:
             (cx + r3 * cos(2*pi*3/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*3/5 - pi/2 + pi/5))   # 19
         ]
 
-        # дальше — без изменений
         edge_list = [
             (1,2),(1,5),(1,6), (2,8),(2,3), (3,10),(3,4), (4,12),(4,5),
             (5,14), (6,7),(6,15), (7,8),(7,17), (8,9), (9,18),(9,10),
@@ -78,7 +77,7 @@ class HamiltonGraphGame:
         
         self.edges = set()
         for a, b in edge_list:
-            self.edges.add(tuple(sorted((a-1, b-1))))  # 1-based → 0-based
+            self.edges.add(tuple(sorted((a - 1, b - 1))))  # 1-based to 0-based
         
         self.vertex_ids = list(range(20))
         self.n = 20
@@ -97,12 +96,12 @@ class HamiltonGraphGame:
         
         # Путь игрока (синим)
         if len(self.visited_order) >= 2:
-            for i in range(len(self.visited_order)-1):
+            for i in range(len(self.visited_order) - 1):
                 a = self.visited_order[i]
-                b = self.visited_order[i+1]
+                b = self.visited_order[i + 1]
                 ax, ay = self.vertices[a]
                 bx, by = self.vertices[b]
-                self.canvas.create_line(ax, ay, bx, by, fill="blue", width=4)
+                self.canvas.create_line(ax, ay, bx, by, fill="red", width=4)
         
         # Замыкание цикла (зелёное)
         if len(self.visited_order) == self.n:
@@ -118,10 +117,8 @@ class HamiltonGraphGame:
         for idx, (x, y) in enumerate(self.vertices):
             if not self.visited_order:
                 color = "white"
-            elif idx == self.visited_order[0]:
-                color = "#ffe4b5"  # стартовая
             elif idx in self.visited_order:
-                color = "lightblue"
+                color = "black"
             else:
                 color = "white"
             
@@ -130,7 +127,12 @@ class HamiltonGraphGame:
                 x + self.vertex_radius, y + self.vertex_radius,
                 fill=color, outline="black", width=2
             )
-            self.canvas.create_text(x, y, text=str(idx+1), font=("Arial", 10, "bold"))
+            if idx in self.visited_order:
+                self.canvas.create_text(x, y, text=str(idx + 1), font=("Arial", 10, "bold"), fill="white")
+            else:
+                self.canvas.create_text(x, y, text=str(idx + 1), font=("Arial", 10, "bold"), fill="black")
+
+
 
     def reset_game_state(self):
         self.visited_order = []
@@ -142,10 +144,11 @@ class HamiltonGraphGame:
         self.draw_graph()
 
     def update_info(self):
-        path_text = ' -> '.join(map(str, [v+1 for v in self.visited_order])) if self.visited_order else "(пусто)"
+        path_text = ' -> '.join(map(str, [v + 1 for v in self.visited_order])) if self.visited_order else "(пусто)"
         self.info.config(
-            text=f"Путь: {path_text} | посещено: {len(self.visited_order)} из {self.n} "
-                 f"(клик мышью по вершинам, R — сброс, цифры 0-9)"
+            text=f"Посещено: {len(self.visited_order)} из {self.n} "
+                 f"(клик мышью по вершинам, R — сброс, цифры 0-9)\n"
+                 f"Путь: {path_text}"
         )
 
     def on_click_vertex(self, idx):
@@ -162,7 +165,7 @@ class HamiltonGraphGame:
             if edge in self.edges:
                 self.visited_order.append(idx)
             else:
-                self.info.config(text="❌ Нет ребра! Выберите соседнюю вершину.", fg="red")
+                self.info.config(text="Нет ребра! Выберите соседнюю вершину.", fg="red")
                 return
 
         self.draw_graph()
@@ -175,7 +178,7 @@ class HamiltonGraphGame:
             last = self.visited_order[-1]
             edge = (min(first, last), max(first, last))
             if edge in self.edges:
-                self.info.config(text="🎉 ГАМИЛЬТОНОВ ЦИКЛ НА ДОДЕКАЭДРЕ ПОСТРОЕН! 🎉", fg="green")
+                self.info.config(text="ГАМИЛЬТОНОВ ЦИКЛ НА ДОДЕКАЭДРЕ ПОСТРОЕН!", fg="green")
             else:
                 self.info.config(text="Все вершины посещены, но цикл не замкнут.", fg="orange")
             self.draw_graph()
