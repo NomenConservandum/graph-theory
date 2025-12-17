@@ -61,10 +61,10 @@ class HamiltonGraphGame:
             (cx + r2 * cos(2*pi*2/5 + pi/2), cy + r2 * sin(2*pi*2/5 + pi/2)),  # 14
             
             # Вершины 16-20: нижнее кольцо оставляем как было (на r2)
-            (cx + r3 * cos(2*pi*0/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*0/5 - pi/2 + pi/5)),  # 15
-            (cx + r3 * cos(2*pi*4/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*4/5 - pi/2 + pi/5)),  # 16
-            (cx + r3 * cos(2*pi*2/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*2/5 - pi/2 + pi/5)),  # 17
-            (cx + r3 * cos(2*pi*1/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*1/5 - pi/2 + pi/5)),  # 18
+            (cx + r3 * cos(2*pi*4/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*4/5 - pi/2 + pi/5)),  # 15
+            (cx + r3 * cos(2*pi*0/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*0/5 - pi/2 + pi/5)),  # 16
+            (cx + r3 * cos(2*pi*1/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*1/5 - pi/2 + pi/5)),  # 17
+            (cx + r3 * cos(2*pi*2/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*2/5 - pi/2 + pi/5)),  # 18
             (cx + r3 * cos(2*pi*3/5 - pi/2 + pi/5), cy + r3 * sin(2*pi*3/5 - pi/2 + pi/5))   # 19
         ]
 
