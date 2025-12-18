@@ -33,7 +33,7 @@
 
 == код (фрагменты кода)
 
-```
+```go
 type Node struct {
 	// Id    uint32
 	Value interface{}
@@ -88,6 +88,87 @@ func GraphConstructor(isOriented bool, isWeighted bool) *GraphInfo {
 }
 ```
 
-//== краткое описание алгоритма
+== примеры входных и выходных данных
 
-//== примеры входных и выходных данных
+=== Входные данные
+```
+TYPE: DIRECTED UNWEIGHTED
+VERTICES: 1,2,3,4,5
+EDGES:
+1->1
+1->2
+2->3
+3->4
+4->5
+5->5
+```
+
+=== Удаление вершины
+```
+Edges:
+From '1' to '1'
+From '1' to '2'
+From '2' to '3'
+From '3' to '4'
+From '4' to '5'
+From '5' to '5'
+
+...
+
+Vertices:
+0: 1
+1: 2
+2: 3
+3: 4
+4: 5
+Enter vertex index to remove: 0
+Vertex '1' removed successfully
+
+...
+
+Edges:
+From '2' to '3'
+From '3' to '4'
+From '4' to '5'
+From '5' to '5'
+```
+
+=== Добавление ребра
+```
+Edges:
+From '2' to '3'
+From '3' to '4'
+From '4' to '5'
+From '5' to '5'
+
+Vertices:
+0: 2
+1: 3
+2: 4
+3: 5
+Enter first vertex index: 0
+Enter second vertex index: 3
+Added oriented edge from '2' to '5'
+
+...
+
+Edges:
+From '2' to '3'
+From '2' to '5'
+From '3' to '4'
+From '4' to '5'
+From '5' to '5'
+```
+
+=== Пример ввода некорректного индекса
+
+```
+Edges:
+0. From '2' to '3'
+1. From '2' to '5'
+2. From '3' to '4'
+3. From '4' to '5'
+4. From '5' to '5'
+Enter edge index to remove: 5
+Invalid edge index
+```
